@@ -21,9 +21,19 @@
     </div>
     
     <div class="card">
-        <div class="card-body">
-            <p class="card-text">{{ $post->content }}</p>
-        </div>
+            @if($post->image)
+                <div class="text-center p-3">  <!-- Resmi ortala -->
+                    <img src="{{ asset($post->image) }}" 
+                        class="img-fluid rounded mx-auto d-block"  
+                        alt="{{ $post->title }}"
+                        style="max-height: 700px; width: auto;">  <!-- Maksimum yükseklik -->
+                </div>
+            @endif
+            
+            <div class="card-body">
+
+                <p class="card-text">{{ $post->content }}</p>
+            </div>
         <div class="card-footer text-muted">
             <small>
                 Oluşturulma: {{ $post->created_at->format('d.m.Y H:i') }} |

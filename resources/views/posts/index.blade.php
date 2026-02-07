@@ -14,6 +14,15 @@
             @foreach($posts as $post)
                 <div class="list-group-item">
                     <div class="d-flex justify-content-between align-items-start">
+                        <!-- RESİM (varsa) -->
+                        @if($post->image)
+                            <div class="me-3 d-flex align-items-center justify-content-center" style="width: 120px; flex-shrink: 0;">
+                                <img src="{{ asset($post->image) }}" 
+                                    alt="{{ $post->title }}" 
+                                    class="img-fluid rounded"
+                                    style="max-height: 80px; height: 100%; object-fit: cover;">
+                            </div>
+                        @endif
                         <div>
                             <h5>{{ $post->title }}</h5>
                             <p class="mb-1">

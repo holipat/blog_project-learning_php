@@ -10,7 +10,8 @@ Route::get('/', function () {
 
 // Resource route: Yukarıdaki 7 metod için otomatik route oluşturur
 Route::resource('posts', PostController::class);
-
+Route::delete('/posts/{post}/delete-image', [PostController::class, 'deleteImage'])
+    ->name('posts.delete-image');
 /*Route::get('/', function () {
 Route::get('/ana-sayfa', [SiteController::class, 'index']);
 Route::get('/hakkimizda', [SiteController::class, 'hakkimizda']);

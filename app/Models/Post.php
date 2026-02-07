@@ -10,7 +10,7 @@ class Post extends Model
     use HasFactory;
 
     // Mass assignment için izin verilen alanlar
-    protected $fillable = ['title', 'content'];
+    protected $fillable = ['title', 'content', 'image'];
     
     // Veya tüm alanlara izin vermek için:
     // protected $guarded = [];
