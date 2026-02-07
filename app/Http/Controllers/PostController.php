@@ -47,9 +47,6 @@ class PostController extends Controller
             $validated['image'] = $imagePath;
         }
 
-        // Mevcut kullanıcıyı ata (test için default 1)
-        $validated['user_id'] = auth()->id() ?? 1;
-
         // Veritabanına kaydet
         Post::create($validated);
 
