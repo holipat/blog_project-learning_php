@@ -67,13 +67,17 @@
         
         <div class="d-flex gap-2">
             <button type="submit" class="btn btn-primary">Güncelle</button>
-                                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="btn btn-sm btn-outline-danger"
-                            onclick="return confirm('Resmi silmek istediğinize emin misiniz?')">
-                        <i class="bi bi-trash"></i> Resmi Sil
-                    </button>
             <a href="{{ route('posts.show', $post) }}" class="btn btn-secondary">İptal</a>
         </div>
     </form>
+    <div class="mt-3">
+    <form action="{{ route('posts.delete-image', $post) }}" method="POST">
+        @csrf
+        @method('DELETE')
+        <button type="submit" class="btn btn-outline-danger btn-sm"
+                onclick="return confirm('Sadece resmi silmek istediğinize emin misiniz? Blog yazısı silinmeyecek.')">
+            <i class="bi bi-trash"></i> Sadece Resmi Sil
+        </button>
+    </form>
+</div>
 @endsection

@@ -46,7 +46,7 @@
 
         <!-- Footer -->
         <footer class="mt-4 text-center text-muted">
-            Laravel Blog Sistemi &copy; {{ date('Y') }}
+            Blog Sistemi &copy; {{ date('Y') }}
         </footer>
     </div>
 
