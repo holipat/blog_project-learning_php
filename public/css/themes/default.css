@@ -1,0 +1,137 @@
+/* Default Theme - Purple & Blue (Pastel) */
+:root {
+    --primary-light: #e6e6ff;
+    --primary: #9d7bff;
+    --primary-dark: #7c5cf5;
+    --secondary: #6ab7ff;
+    --accent: #ff9df8;
+    --pastel-blue: #b3e0ff;
+    --pastel-purple: #d9ccff;
+    --text-dark: #333344;
+    --text-light: #666677;
+    --bg-light: #fafaff;
+    --card-bg: #ffffff;
+    --shadow-soft: 0 8px 25px rgba(157, 123, 255, 0.08);
+    --shadow-hover: 0 12px 30px rgba(157, 123, 255, 0.15);
+    --radius-sm: 12px;
+    --radius-md: 18px;
+    --radius-lg: 24px;
+    --theme-name: 'Default';
+}
+
+body {
+    background: linear-gradient(135deg, #f8f7ff 0%, #f0eeff 100%) !important;
+}
+
+/* Navbar Styling */
+.navbar-blury {
+    background: rgba(255, 255, 255, 0.9) !important;
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(157, 123, 255, 0.1);
+    box-shadow: 0 4px 20px rgba(157, 123, 255, 0.05);
+}
+
+.nav-link:hover {
+    color: var(--primary) !important;
+    background: rgba(157, 123, 255, 0.08);
+    transform: translateY(-2px);
+}
+
+/* Cards */
+.cute-card-header {
+    background: linear-gradient(90deg, var(--primary-light) 0%, var(--pastel-blue) 100%);
+    border-bottom: 1px solid rgba(157, 123, 255, 0.1);
+    padding: 20px 25px;
+    border-radius: var(--radius-md) var(--radius-md) 0 0 !important;
+}
+
+/* Buttons */
+.btn-cute-primary {
+    background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 10px 24px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(157, 123, 255, 0.3);
+}
+
+.btn-cute-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(157, 123, 255, 0.4);
+    color: white;
+}
+
+.btn-cute-secondary {
+    background: white;
+    color: var(--primary);
+    border: 2px solid var(--primary-light);
+    border-radius: 50px;
+    padding: 10px 24px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-cute-secondary:hover {
+    background: var(--primary-light);
+    color: var(--primary-dark);
+    border-color: var(--primary);
+    transform: translateY(-2px);
+}
+
+/* List Items */
+.cute-list-item:hover {
+    transform: translateX(5px);
+    box-shadow: 0 6px 20px rgba(157, 123, 255, 0.1);
+    border-left-color: var(--primary);
+}
+
+/* Forms */
+.cute-form-control:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(157, 123, 255, 0.2);
+    background: white;
+}
+
+/* Alerts */
+.alert-success {
+    background: linear-gradient(90deg, #d4ffd4 0%, #e8ffe8 100%);
+    color: #2d8a2d;
+    border-left: 4px solid #4CAF50;
+}
+
+.alert-info {
+    background: linear-gradient(90deg, #d4f4ff 0%, #e8f8ff 100%);
+    color: #1e88e5;
+    border-left: 4px solid #2196F3;
+}
+
+.alert-danger {
+    background: linear-gradient(90deg, #ffd4d4 0%, #ffe8e8 100%);
+    color: #e53935;
+    border-left: 4px solid #F44336;
+}
+
+/* Footer */
+.cute-footer {
+    background: linear-gradient(90deg, var(--primary-light) 0%, var(--pastel-blue) 100%);
+    border-top: 1px solid rgba(157, 123, 255, 0.1);
+    padding: 25px 0;
+    margin-top: 50px;
+    text-align: center;
+    color: var(--text-light);
+}
+
+/* Theme Switcher */
+.theme-option:hover {
+    background: rgba(157, 123, 255, 0.1);
+    color: var(--primary);
+    transform: translateX(4px);
+}
+
+.theme-option.active {
+    background: linear-gradient(90deg, var(--primary-light) 0%, var(--pastel-blue) 100%);
+    color: var(--primary-dark);
+    font-weight: 600;
+}

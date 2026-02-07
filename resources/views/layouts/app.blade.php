@@ -11,29 +11,19 @@
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     
+    <!-- Font Awesome (For Wizard Theme) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600&family=Cinzel:wght@400;500;600;700&family=MedievalSharp&family=UnifrakturMaguntia&family=Cormorant+Garamond:wght@300;400;500&display=swap" rel="stylesheet">
+    
+    <!-- Dynamic Theme CSS -->
+    @php
+        $theme = session('theme', 'default');
+    @endphp
+    <link href="{{ asset('css/themes/' . $theme . '.css') }}" rel="stylesheet" id="theme-css">
     
     <style>
-        :root {
-            --primary-light: #e6e6ff;
-            --primary: #9d7bff;
-            --primary-dark: #7c5cf5;
-            --secondary: #6ab7ff;
-            --accent: #ff9df8;
-            --pastel-blue: #b3e0ff;
-            --pastel-purple: #d9ccff;
-            --text-dark: #333344;
-            --text-light: #666677;
-            --bg-light: #fafaff;
-            --card-bg: #ffffff;
-            --shadow-soft: 0 8px 25px rgba(157, 123, 255, 0.08);
-            --shadow-hover: 0 12px 30px rgba(157, 123, 255, 0.15);
-            --radius-sm: 12px;
-            --radius-md: 18px;
-            --radius-lg: 24px;
-        }
-        
         * {
             margin: 0;
             padding: 0;
@@ -42,7 +32,6 @@
         
         body {
             font-family: 'Nunito', sans-serif;
-            background: linear-gradient(135deg, #f8f7ff 0%, #f0eeff 100%);
             color: var(--text-dark);
             min-height: 100vh;
             padding-bottom: 60px;
@@ -291,6 +280,93 @@
                 font-size: 1.5rem;
             }
         }
+        
+        /* Theme Switcher Styles */
+        .theme-switcher-btn {
+            background: none;
+            border: none;
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: var(--primary);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .theme-switcher-btn:hover {
+            transform: scale(1.1) rotate(20deg);
+            color: var(--primary-dark);
+        }
+        
+        .theme-selector {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: var(--card-bg);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-hover);
+            margin-top: 10px;
+            padding: 12px;
+            min-width: 200px;
+            z-index: 1000;
+            animation: slideDown 0.3s ease;
+        }
+        
+        .theme-selector.show {
+            display: block;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .theme-option {
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--text-dark);
+            font-weight: 500;
+            margin-bottom: 6px;
+        }
+        
+        .theme-option:last-child {
+            margin-bottom: 0;
+        }
+        
+        .theme-option:hover {
+            background: rgba(157, 123, 255, 0.1);
+            color: var(--primary);
+            transform: translateX(4px);
+        }
+        
+        .theme-option.active {
+            background: linear-gradient(90deg, var(--primary-light) 0%, var(--pastel-blue) 100%);
+            color: var(--primary-dark);
+            font-weight: 600;
+        }
+        
+        .theme-color-dot {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: inline-block;
+            border: 2px solid white;
+        }
     </style>
 </head>
 <body class="d-flex flex-column h-100">
@@ -325,6 +401,26 @@
                         <a class="nav-link" href="{{ route('posts.create') }}">
                             <i class="bi bi-plus-circle me-1"></i> Yeni Yazı
                         </a>
+                    </li>
+                    <li class="nav-item position-relative">
+                        <button class="theme-switcher-btn" id="themeSwitcherBtn" title="Tema Değiştir">
+                            <i class="bi bi-palette-fill"></i>
+                            <span class="d-none d-lg-inline small">Tema</span>
+                        </button>
+                        <div class="theme-selector" id="themeSelector">
+                            @php
+                                use App\Http\Controllers\ThemeController;
+                                $themes = ThemeController::getAvailableThemes();
+                                $currentTheme = session('theme', 'default');
+                            @endphp
+                            @foreach($themes as $theme)
+                                <a href="{{ route('theme.toggle', $theme['id']) }}" 
+                                   class="theme-option {{ $currentTheme === $theme['id'] ? 'active' : '' }}">
+                                    <i class="bi bi-check-lg" style="visibility: {{ $currentTheme === $theme['id'] ? 'visible' : 'hidden' }}; width: 16px; display: inline-block;"></i>
+                                    <span>{{ $theme['name'] }}</span>
+                                </a>
+                            @endforeach
+                        </div>
                     </li>
                 </ul>
             </div>
@@ -405,6 +501,34 @@
                 bsAlert.close();
             });
         }, 5000);
+        
+        // Theme Switcher
+        document.addEventListener('DOMContentLoaded', function() {
+            const themeSwitcherBtn = document.getElementById('themeSwitcherBtn');
+            const themeSelector = document.getElementById('themeSelector');
+            
+            if (themeSwitcherBtn && themeSelector) {
+                // Toggle theme selector on button click
+                themeSwitcherBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    themeSelector.classList.toggle('show');
+                });
+                
+                // Close theme selector when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (!e.target.closest('.theme-switcher-btn') && !e.target.closest('.theme-selector')) {
+                        themeSelector.classList.remove('show');
+                    }
+                });
+                
+                // Close theme selector when a theme is selected
+                document.querySelectorAll('.theme-option').forEach(option => {
+                    option.addEventListener('click', function() {
+                        themeSelector.classList.remove('show');
+                    });
+                });
+            }
+        });
     </script>
     
     <!-- Character counter for forms -->
