@@ -1,52 +1,245 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 📝 Blog Projesi - Laravel 12
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Csentez, zarif ve modern bir blog uygulaması. **Laravel 12** ile yapılmıştır.
 
-## About Laravel
+## 🎨 Özellikler
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+✨ **Modern Tasarım**
+- Pastel renkler ve yumuşak gölgeler
+- Responsive Bootstrap 5 tasarımı
+- Smooth animasyonlar ve geçişler
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+📝 **Blog Yönetimi**
+- Blog yazıları oluştur, oku, güncelle, sil
+- Resim yükleme ve yönetimi
+- Yazıdan önceki/sonraki yazılara gezinme
+- Pagination ile yazı listesi
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+🔐 **Güvenlik**
+- Kullanıcı doğrulama (Authentication)
+- Yetkilendirme kontrolü (Authorization/Policies)
+- Secure dosya yönetimi
+- CSRF koruması
 
-## Learning Laravel
+⚡ **Performans**
+- N+1 sorgu optimizasyonu (Eager Loading)
+- Soft delete ile veri kurtarma
+- Pagination ile sayfa yönetimi
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+## 🚀 Hızlı Başlangıç
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### Gereksinimler
 
-## Laravel Sponsors
+- PHP 8.2+
+- Composer
+- MySQL/MariaDB
+- Node.js (isteğe bağlı)
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### Kurulum
 
-### Premium Partners
+1. **Projeyi klonla.**
+   ```bash
+   cd blog_project-learning_php
+   ```
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+2. **Bağımlılıkları yükle**
+   ```bash
+   composer install
+   ```
 
-## Contributing
+3. **Environment dosyasını konfigure et**
+   ```bash
+   cp .env.example .env
+   ```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+4. **Uygulama keyi oluştur**
+   ```bash
+   php artisan key:generate
+   ```
 
-## Code of Conduct
+5. **Veritabanını konfigure et** (.env dosyasında)
+   ```
+   DB_CONNECTION=mysql
+   DB_HOST=127.0.0.1
+   DB_PORT=3306
+   DB_DATABASE=blog_project
+   DB_USERNAME=root
+   DB_PASSWORD=
+   ```
+
+6. **Setup script'ini çalıştır**
+   
+   **Windows için:**
+   ```bash
+   setup.bat
+   ```
+   
+   **Linux/Mac için:**
+   ```bash
+   bash setup.sh
+   ```
+   
+   Veya manuel olarak:
+   ```bash
+   php artisan migrate
+   php artisan storage:link
+   php artisan config:cache
+   ```
+
+7. **Projeyi başlat**
+   ```bash
+   php artisan serve
+   ```
+   
+   Ardından: http://localhost:8000 adresine gidin.
+
+## 📚 Dokümantasyon
+
+### Yeni Başlayanlar
+- [IMPROVEMENTS.md](./IMPROVEMENTS.md) - Yapılan tüm iyileştirmeler
+- [DEVELOPER_GUIDE.md](./DEVELOPER_GUIDE.md) - Developer rehberi
+
+### Proje Yapısı
+```
+blog_project/
+├── app/
+│   ├── Http/Controllers/PostController.php
+│   ├── Models/Post.php
+│   ├── Models/User.php
+│   └── Policies/PostPolicy.php
+├── database/migrations/
+├── resources/views/posts/
+├── routes/web.php
+└── storage/app/public/posts/
+```
+
+## 🎯 İyileştirmeleri
+
+### Modeller
+- ✅ Eloquent ilişkileri (One-to-Many)
+- ✅ Soft delete desteği
+- ✅ Type hints ve documentation
+
+### Controller
+- ✅ Pagination (10 yazı/sayfa)
+- ✅ N+1 optimization (Eager Loading)
+- ✅ Secure file handling (Storage facade)
+- ✅ Authorization checks
+
+### Güvenlik
+- ✅ Authentication middleware
+- ✅ Authorization policies
+- ✅ Dosyalar storage/public'te (secure)
+- ✅ CSRF protection
+
+### Database
+- ✅ user_id foreign key
+- ✅ Soft delete sütunu
+- ✅ Cascade delete/update
+
+## 💻 Kullanım
+
+### Blog Yazısı Oluşturma
+
+1. "Yeni Yazı Oluştur" butonuna tıkla
+2. Başlık, içerik ve (isteğe bağlı) resim gir
+3. "Oluştur" butonuna tıkla
+
+### Blog Yazısını Düzenleme
+
+1. Yazıda "Düzenle" butonuna tıkla
+2. Başlık ve içeriği değiştir
+3. "Güncelle" butonuna tıkla
+
+### Blog Yazısını Silme
+
+1. Yazıda "Sil" butonuna tıkla
+2. Silmeyi onayla
+
+**Not**: Yalnızca yazının sahibi tarafından silinebilir!
+
+## 🔧 Komut Referansı
+
+```bash
+# Veritabanı
+php artisan migrate                    # Migration'ları çalıştır
+php artisan migrate:rollback           # Son migration'ı geri al
+php artisan tinker                     # Laravel REPL
+
+# Cache
+php artisan cache:clear                # Cache temizle
+php artisan config:cache               # Config cache
+
+# Storage
+php artisan storage:link               # Symbolic link oluştur
+
+# Make
+php artisan make:model Model           # Model oluştur
+php artisan make:controller Controller # Controller oluştur
+php artisan make:migration create_table # Migration oluştur
+```
+
+## 📊 Database Schema
+
+### posts tablosu
+```
+id          - BIGINT PRIMARY KEY
+user_id     - BIGINT UNSIGNED (FK -> users)
+title       - VARCHAR(255)
+content     - LONGTEXT
+image       - VARCHAR(255) NULLABLE
+created_at  - TIMESTAMP
+updated_at  - TIMESTAMP
+deleted_at  - TIMESTAMP (Soft Delete)
+```
+
+## 🔐 Güvenlik Notu
+
+- Resimler `storage/app/public/posts/` dizinine kaydedilir
+- `public/storage` symbolic link'i ile erişilir
+- Dosyalar random isimlendirme kullanır
+- CSRF koruması her POST/PUT/DELETE isteğine
+
+## 🛠️ Troubleshooting
+
+### Resimler gösterilmiyor?
+```bash
+php artisan storage:link
+```
+
+### Cache sorunları?
+```bash
+php artisan cache:clear
+php artisan config:clear
+```
+
+### Migration hatası?
+```bash
+php artisan migrate:rollback
+php artisan migrate
+```
+
+### Permission hatası?
+```bash
+chmod -R 775 storage/
+chmod -R 775 bootstrap/cache/
+```
+
+## 📝 Lisans
+
+Bu proje MIT lisansı altındadır. Detaylar için LICENSE dosyasını göz atın.
+
+## 🙋 Destek
+
+Sorularınız veya sorunlarınız varsa, lütfen issue açın.
+
+---
+
+**Son Güncelleme**: 7 Şubat 2026  
+**Framework**: Laravel 12  
+**PHP Sürümü**: 8.2+  
+**Database**: MySQL 8.0+  
+
 
 In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
 

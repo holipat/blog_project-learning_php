@@ -4,23 +4,25 @@ namespace App\Http\Controllers;
 
 use App\Models\Post;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class PostController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Tüm blog yazılarını listele (pagination ile)
      */
     public function index()
     {
-        $posts = Post::latest()->get(); // latest() = en yeni en üstte
-        
-        // posts.index view'ını göster, posts değişkenini gönder
+        $posts = Post::with('user')
+            ->latest()
+            ->paginate(10);
+
         return view('posts.index', compact('posts'));
-        //
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Yeni yazı oluşturma formunu göster
      */
     public function create()
     {
@@ -28,133 +30,149 @@ class PostController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Yeni yazıyı veritabanına kaydet
      */
     public function store(Request $request)
     {
-        // 1. Validasyon (doğrulama)
-        $request->validate([
-            'title' => 'required|min:3|max:100',
-            'content' => 'required|min:10',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048' // 2MB'a kadar
-        ], [
-            'title.required' => 'Başlık alanı zorunludur.',
-            'title.min' => 'Başlık en az 3 karakter olmalıdır.',
-            'content.required' => 'İçerik alanı zorunludur.'
+        // Validasyon
+        $validated = $request->validate([
+            'title' => ['required', 'string', 'min:3', 'max:255'],
+            'content' => ['required', 'string', 'min:10'],
+            'image' => ['nullable', 'image', 'max:2048', 'mimes:jpeg,png,jpg,gif,webp'],
         ]);
 
-        $imagePath = null;
+        // Resim yüklenirse işle
         if ($request->hasFile('image')) {
-            $image = $request->file('image');
-            $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
-            $image->move(public_path('images'), $imageName);
-            $imagePath = 'images/' . $imageName;
+            $imagePath = $this->storeImage($request->file('image'));
+            $validated['image'] = $imagePath;
         }
-        
-        // 2. Veritabanına kaydet
-        Post::create([
-            'title' => $request->title,
-            'content' => $request->content,
-            'image' => $imagePath // null veya 'images/xxx.jpg'
-        ]);
-        
-        // 3. Kullanıcıyı blog listesine yönlendir
-        return redirect()->route('posts.index')
-                         ->with('success', 'Blog yazısı başarıyla eklendi!');
+
+        // Mevcut kullanıcıyı ata (test için default 1)
+        $validated['user_id'] = auth()->id() ?? 1;
+
+        // Veritabanına kaydet
+        Post::create($validated);
+
+        return redirect()
+            ->route('posts.index')
+            ->with('success', 'Blog yazısı başarıyla oluşturuldu!');
     }
 
     /**
-     * Display the specified resource.
+     * Blog yazısını ayrıntılarıyla göster
      */
-   public function show(Post $post)  // Route Model Binding
-{
-    // $post otomatik olarak ID'sine göre bulunur
-    return view('posts.show', compact('post'));
-}
+    public function show(Post $post)
+    {
+        // Önceki yazıyı bul
+        $previous = Post::where('id', '<', $post->id)
+            ->orderBy('id', 'desc')
+            ->first();
+
+        // Sonraki yazıyı bul
+        $next = Post::where('id', '>', $post->id)
+            ->orderBy('id', 'asc')
+            ->first();
+
+        return view('posts.show', compact('post', 'previous', 'next'));
+    }
 
     /**
-     * Show the form for editing the specified resource.
+     * Yazı düzenleme formunu göster
      */
-public function edit(Post $post)
-{
-    // Düzenleme formunu göster, içine mevcut veriyi doldur
-    return view('posts.edit', compact('post'));
-}
+    public function edit(Post $post)
+    {
+        return view('posts.edit', compact('post'));
+    }
 
     /**
-     * Update the specified resource in storage.
+     * Yazıyı güncelle
      */
     public function update(Request $request, Post $post)
     {
 
-        $request->validate([
-            'title' => 'required|min:3|max:100',
-            'content' => 'required|min:10',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
+        // Validasyon
+        $validated = $request->validate([
+            'title' => ['required', 'string', 'min:3', 'max:255'],
+            'content' => ['required', 'string', 'min:10'],
+            'image' => ['nullable', 'image', 'max:2048', 'mimes:jpeg,png,jpg,gif,webp'],
         ]);
 
+        // Eğer yeni resim yüklendiyse
         if ($request->hasFile('image')) {
-            $image = $request->file('image');
-            $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
-            $image->move(public_path('images'), $imageName);
-            $imagePath = 'images/' . $imageName;
-            
-            // Post'un image alanını güncelle
-            $post->image = $imagePath;
-        } else {
-            // Eğer yeni resim yüklenmediyse, mevcut resmi koru
-            $post->image = $post->image; // Bu satır aslında gereksiz, sadece açıklama için
+            // Eski resmi sil
+            if ($post->image) {
+                Storage::disk('public')->delete($post->image);
+            }
+
+            // Yeni resmi kaydet
+            $imagePath = $this->storeImage($request->file('image'));
+            $validated['image'] = $imagePath;
         }
-        
-        $post->title = $request->title;
-        $post->content = $request->content;
-        $post->save();
-        
-        return redirect()->route('posts.index')
-                         ->with('success', 'Blog yazısı güncellendi!');
+
+        // Yazıyı güncelle
+        $post->update($validated);
+
+        return redirect()
+            ->route('posts.show', $post)
+            ->with('success', 'Blog yazısı başarıyla güncellendi!');
     }
 
     /**
- * Sadece resmi sil (post'u değil)
- */
+     * Sadece yazının resmini sil
+     */
     public function deleteImage(Post $post)
     {
-        // 1. Resim var mı kontrol et
+        // Resim var mı kontrol et
         if (!$post->image) {
-            return redirect()->back()
-                ->with('error', 'Bu gönderide silinecek resim bulunamadı.');
+            return redirect()
+                ->back()
+                ->with('error', 'Bu yazıda silinecek resim bulunamadı.');
         }
-        
-        // 2. Fiziksel dosyayı sil
-        $imagePath = public_path($post->image);
-        if (file_exists($imagePath)) {
-            unlink($imagePath);
-        }
-        
-        // 3. Veritabanındaki image alanını NULL yap
-        $post->image = null;
-        $post->save();
-        
-        // 4. Geri dön ve başarı mesajı göster
-        return redirect()->back()
+
+        // Resmi sil
+        Storage::disk('public')->delete($post->image);
+
+        // Veritabanında NULL yap
+        $post->update(['image' => null]);
+
+        return redirect()
+            ->back()
             ->with('success', 'Resim başarıyla silindi.');
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Yazıyı sil
      */
     public function destroy(Post $post)
     {
+        // Resmi sil
         if ($post->image) {
-            $imagePath = public_path($post->image);
-            if (file_exists($imagePath)) {
-                unlink($imagePath);
-            }
+            Storage::disk('public')->delete($post->image);
         }
-        
+
+        // Yazıyı sil (soft delete)
         $post->delete();
-        
-        return redirect()->route('posts.index')
-                         ->with('success', 'Blog yazısı silindi!');
+
+        return redirect()
+            ->route('posts.index')
+            ->with('success', 'Blog yazısı başarıyla silindi!');
+    }
+
+    /**
+     * Resmi Storage'a kaydet ve yolunu döndür
+     *
+     * @param \Illuminate\Http\UploadedFile $image
+     * @return string|null
+     */
+    private function storeImage($image): ?string
+    {
+        if (!$image) {
+            return null;
+        }
+
+        $fileName = Str::random(32) . '.' . $image->getClientOriginalExtension();
+        $path = $image->storeAs('posts', $fileName, 'public');
+
+        return $path;
     }
 }
