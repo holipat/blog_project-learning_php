@@ -127,12 +127,14 @@ $currentTheme = session('theme', 'default');
     
     <!-- Main Content -->
     <main class="container my-5 flex-grow-1">
-        @if(session('success'))<div class="cute-alert alert-success fade show"><div class="d-flex align-items-center"><i class="bi bi-check-circle-fill me-3" style="font-size: 1.5rem;"></i><div>{{ session('success') }}</div></div>@endif
-        @if(session('error'))<div class="cute-alert alert-danger fade show"><div class="d-flex align-items-center"><i class="bi bi-exclamation-triangle-fill me-3" style="font-size: 1.5rem;"></i><div>{{ session('error') }}</div></div>@endif
         <div class="row justify-content-center">
+            <!-- Alerts displayed at full width above content -->
+            @if(session('success'))<div class="col-12"><div class="cute-alert alert-success fade show"><div class="d-flex align-items-center"><i class="bi bi-check-circle-fill me-3" style="font-size: 1.5rem;"></i><div>{{ session('success') }}</div></div></div></div>@endif
+            @if(session('error'))<div class="col-12"><div class="cute-alert alert-danger fade show"><div class="d-flex align-items-center"><i class="bi bi-exclamation-triangle-fill me-3" style="font-size: 1.5rem;"></i><div>{{ session('error') }}</div></div></div></div>@endif
             <div class="col-lg-10 col-xl-8">
                 @yield('content')
             </div>
+        </div>
     </main>
     
     <!-- Footer -->
@@ -236,3 +238,4 @@ $currentTheme = session('theme', 'default');
     @stack('scripts')
 </body>
 </html>
+
