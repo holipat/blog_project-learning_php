@@ -4,17 +4,25 @@ namespace App\Http\Controllers;
 
 use App\Models\Post;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class PostController extends Controller
 {
     /**
-     * Tüm blog yazılarını listele (pagination ile)
+     * Cache TTL for post queries (in seconds)
+     */
+    private const CACHE_TTL = 300; // 5 minutes
+
+    /**
+     * Tüm blog yazılarını listele (pagination ve eager loading ile optimize edilmiş)
      */
     public function index()
     {
-        $posts = Post::with('user')
+        $posts = Post::with('user:id,name')
+            ->select(['id', 'user_id', 'title', 'content', 'image', 'created_at'])
             ->latest()
             ->paginate(10);
 
@@ -48,7 +56,10 @@ class PostController extends Controller
         }
 
         // Veritabanına kaydet
-        Post::create($validated);
+        $post = Post::create($validated);
+
+        // Clear related cache
+        $this->clearPostCache();
 
         return redirect()
             ->route('posts.index')
@@ -56,17 +67,22 @@ class PostController extends Controller
     }
 
     /**
-     * Blog yazısını ayrıntılarıyla göster
+     * Blog yazısını ayrıntılarıyla göster (optimized queries)
      */
     public function show(Post $post)
     {
-        // Önceki yazıyı bul
-        $previous = Post::where('id', '<', $post->id)
+        // Eager load user data with selective columns
+        $post->load('user:id,name,email');
+        
+        // Optimize previous/next queries using a single query with UNION or conditional
+        // Method 1: Using two separate efficient queries (most readable)
+        $previous = Post::select(['id', 'title', 'created_at'])
+            ->where('id', '<', $post->id)
             ->orderBy('id', 'desc')
             ->first();
 
-        // Sonraki yazıyı bul
-        $next = Post::where('id', '>', $post->id)
+        $next = Post::select(['id', 'title', 'created_at'])
+            ->where('id', '>', $post->id)
             ->orderBy('id', 'asc')
             ->first();
 
@@ -86,7 +102,6 @@ class PostController extends Controller
      */
     public function update(Request $request, Post $post)
     {
-
         // Validasyon
         $validated = $request->validate([
             'title' => ['required', 'string', 'min:3', 'max:255'],
@@ -108,6 +123,9 @@ class PostController extends Controller
 
         // Yazıyı güncelle
         $post->update($validated);
+
+        // Clear related cache
+        $this->clearPostCache();
 
         return redirect()
             ->route('posts.show', $post)
@@ -132,6 +150,9 @@ class PostController extends Controller
         // Veritabanında NULL yap
         $post->update(['image' => null]);
 
+        // Clear related cache
+        $this->clearPostCache();
+
         return redirect()
             ->back()
             ->with('success', 'Resim başarıyla silindi.');
@@ -150,6 +171,9 @@ class PostController extends Controller
         // Yazıyı sil (soft delete)
         $post->delete();
 
+        // Clear related cache
+        $this->clearPostCache();
+
         return redirect()
             ->route('posts.index')
             ->with('success', 'Blog yazısı başarıyla silindi!');
@@ -157,9 +181,6 @@ class PostController extends Controller
 
     /**
      * Resmi Storage'a kaydet ve yolunu döndür
-     *
-     * @param \Illuminate\Http\UploadedFile $image
-     * @return string|null
      */
     private function storeImage($image): ?string
     {
@@ -171,5 +192,14 @@ class PostController extends Controller
         $path = $image->storeAs('posts', $fileName, 'public');
 
         return $path;
+    }
+
+    /**
+     * Clear post-related cache
+     */
+    private function clearPostCache(): void
+    {
+        // Use simple cache clearing without tags (compatible with all cache stores)
+        Cache::flush();
     }
 }

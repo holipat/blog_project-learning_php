@@ -2,46 +2,65 @@
 
 namespace App\Http\Middleware;
 
+use App\Services\ThemeConfig;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
-use App\Http\Controllers\ThemeController;
 
 class LoadUserTheme
 {
+    /**
+     * Default theme ID
+     */
+    private const DEFAULT_THEME = 'default';
+
     /**
      * Handle an incoming request.
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // Mevcut temaları tanımla
-        $validThemes = [
-            'default',
-            'cutie',
-            'ocean',
-            'sunset',
-            'forest',
-            'midnight',
-            'cotton-candy',
-            'wizard-grimoire'
-        ];
+        $theme = $this->resolveTheme($request);
         
-        // Kullanıcı giriş yaptıysa ve tema tercihini kaysaydıysa
-        if (auth()->check() && auth()->user()->theme_preference) {
-            $theme = auth()->user()->theme_preference;
-        } else {
-            // Session'dan ya da default'tan tema al
-            $theme = session('theme', 'default');
-        }
+        // Validate and normalize theme
+        $theme = ThemeConfig::normalizeTheme($theme);
         
-        // Tema geçerli mi kontrol et
-        if (!in_array($theme, $validThemes)) {
-            $theme = 'default';
-        }
-        
-        // Session'a ata
+        // Store validated theme in session
         session(['theme' => $theme]);
         
+        // Share theme with all views
+        view()->share('currentTheme', $theme);
+        
         return $next($request);
+    }
+
+    /**
+     * Resolve theme from user session, database, or default
+     */
+    private function resolveTheme(Request $request): string
+    {
+        // 1. Check if user is authenticated
+        if (auth()->check()) {
+            $user = auth()->user();
+            
+            // Use user's theme preference from database
+            if ($user->theme_preference) {
+                return $user->theme_preference;
+            }
+        }
+        
+        // 2. Check session
+        $sessionTheme = $request->session()->get('theme');
+        if ($sessionTheme !== null) {
+            return $sessionTheme;
+        }
+        
+        // 3. Check request cookie
+        $cookieTheme = $request->cookie('theme');
+        if ($cookieTheme !== null && ThemeConfig::isValidTheme($cookieTheme)) {
+            return $cookieTheme;
+        }
+        
+        // 4. Fallback to default
+        return self::DEFAULT_THEME;
     }
 }

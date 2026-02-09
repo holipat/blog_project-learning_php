@@ -15,7 +15,7 @@
     </div>
 
     <!-- Form Card -->
-    <div class="cute-card">
+    <div class="cute-card create-edit-form">
         <div class="cute-card-body">
             <form action="{{ isset($post) ? route('posts.update', $post) : route('posts.store') }}" 
                   method="POST" enctype="multipart/form-data">

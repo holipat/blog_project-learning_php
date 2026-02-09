@@ -5,14 +5,14 @@
 @section('content')
     <!-- Header -->
     <div class="text-center mb-5">
-        <h1 class="display-5 fw-bold mb-3" style="color: var(--primary-dark);">
+        <h1 class="display-5 fw-bold mb-3" style="color: var(--rose-blush);">
             <i class="bi bi-chat-square-text-fill me-2"></i>Blog Yazıları
         </h1>
         <p class="lead text-muted mb-4">
             Keşfetmeye hazır olduğunuz tüm yazılar burada! ✨
         </p>
         
-        <a href="{{ route('posts.create') }}" class="btn btn-primary">
+        <a href="{{ route('posts.create') }}" class="btn btn-silver">
             <i class="bi bi-plus-circle me-2"></i>Yeni Yazı Oluştur
         </a>
     </div>

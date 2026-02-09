@@ -2,70 +2,114 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\ThemeConfig;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class ThemeController extends Controller
 {
+    /**
+     * Cache TTL for theme preferences (in seconds)
+     */
+    private const CACHE_TTL = 3600; // 1 hour
+
     /**
      * Toggle theme
      */
     public function toggle(Request $request, $theme)
     {
-        // List of available themes
-        $availableThemes = [
-            'default',
-            'cutie',
-            'ocean',
-            'sunset',
-            'forest',
-            'midnight',
-            'cotton-candy',
-            'wizard-grimoire'
-        ];
-        
-        // Validate theme exists
-        if (!in_array($theme, $availableThemes)) {
+        // Validate theme exists using centralized config
+        if (!ThemeConfig::isValidTheme($theme)) {
             return back()->with('error', 'Tema bulunamadı!');
         }
         
         // Store theme in session
         session(['theme' => $theme]);
         
-        // If user is authenticated, save to database
+        // If user is authenticated, save to database and cache
         if (auth()->check()) {
-            auth()->user()->update(['theme_preference' => $theme]);
+            $user = auth()->user();
+            $user->update(['theme_preference' => $theme]);
+            
+            // Cache the theme preference for faster lookups
+            Cache::put(
+                self::getUserThemeCacheKey($user->id),
+                $theme,
+                self::CACHE_TTL
+            );
         }
         
         return back()->with('success', 'Tema değiştirildi! ✨');
     }
     
     /**
-     * Load user's saved theme or default
+     * Load user's saved theme or default (with caching)
      */
     public static function loadUserTheme()
     {
-        if (auth()->check() && auth()->user()->theme_preference) {
-            session(['theme' => auth()->user()->theme_preference]);
+        $theme = ThemeConfig::getDefaultTheme();
+        
+        if (auth()->check()) {
+            $userId = auth()->id();
+            
+            // Try cache first for authenticated users
+            $cachedTheme = Cache::get(self::getUserThemeCacheKey($userId));
+            
+            if ($cachedTheme !== null) {
+                $theme = $cachedTheme;
+            } elseif (auth()->user()->theme_preference) {
+                $theme = auth()->user()->theme_preference;
+                
+                // Populate cache
+                Cache::put(
+                    self::getUserThemeCacheKey($userId),
+                    $theme,
+                    self::CACHE_TTL
+                );
+            }
         } else {
-            session(['theme' => session('theme', 'default')]);
+            // For guests, use session with default fallback
+            $theme = session('theme', ThemeConfig::getDefaultTheme());
         }
+        
+        // Validate and normalize theme
+        $theme = ThemeConfig::normalizeTheme($theme);
+        session(['theme' => $theme]);
     }
     
     /**
-     * Get all available themes
+     * Get all available themes (using centralized config)
      */
-    public static function getAvailableThemes()
+    public static function getAvailableThemes(): array
     {
-        return [
-            ['id' => 'default', 'name' => 'Default', 'colors' => '#9d7bff, #6ab7ff'],
-            ['id' => 'cutie', 'name' => 'Cutie', 'colors' => '#8b7cff, #7fd3ff'],
-            ['id' => 'ocean', 'name' => 'Ocean', 'colors' => '#2ba8d4, #00bfb3'],
-            ['id' => 'sunset', 'name' => 'Sunset', 'colors' => '#ff9f5a, #ff7185'],
-            ['id' => 'forest', 'name' => 'Forest', 'colors' => '#4a9b6f, #6ac491'],
-            ['id' => 'midnight', 'name' => 'Midnight', 'colors' => '#4a5aed, #6c7cff'],
-            ['id' => 'cotton-candy', 'name' => 'Cotton Candy', 'colors' => '#f5a3d9, #b5a7ff'],
-            ['id' => 'wizard-grimoire', 'name' => 'Wizard Grimoire', 'colors' => '#d4af37, #9d4edd'],
-        ];
+        $themes = ThemeConfig::getThemes();
+        
+        // Transform to the expected format for views
+        $formattedThemes = [];
+        foreach ($themes as $id => $theme) {
+            $formattedThemes[] = [
+                'id' => $id,
+                'name' => $theme['name'],
+                'colors' => $theme['colors']
+            ];
+        }
+        
+        return $formattedThemes;
+    }
+
+    /**
+     * Get current theme from session (optimized version)
+     */
+    public static function getCurrentTheme(): string
+    {
+        return session('theme', ThemeConfig::getDefaultTheme());
+    }
+
+    /**
+     * Generate cache key for user theme
+     */
+    private static function getUserThemeCacheKey(int $userId): string
+    {
+        return "user:{$userId}:theme_preference";
     }
 }
-

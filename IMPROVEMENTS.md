@@ -9,7 +9,8 @@ Bu dokümante, `blog_project-learning_php` uygulamasına yapılan tüm iyileşti
 3. [Controller Optimizasyonları](#controller-optimizasyonları)
 4. [Güvenlik İyileştirmeleri](#güvenlik-iyileştirmeleri)
 5. [View Düzenlemeleri](#view-düzenlemeleri)
-6. [Yapılacak Adımlar](#yapılacak-adımlar)
+6. [Performans İyileştirmeleri](#performans-iyileştirmeleri) **[YENİ]**
+7. [Yapılacak Adımlar](#yapılacak-adımlar)
 
 ---
 
@@ -194,6 +195,173 @@ $path = $image->storeAs('posts', $fileName, 'public');
 ### 4. **layouts/app.blade.php**
 - ✅ Zaten güzel tasarlanmış (değişiklik yapılmadı)
 - ✅ Navbar, footer, styling hepsi hazır
+
+---
+
+## ⚡ Performans İyileştirmeleri (YENİ)
+
+Bu bölüm, uygulama performansını artırmak için yapılan optimizasyonları açıklar.
+
+### 1. ThemeConfig Servisi (`app/Services/ThemeConfig.php`)
+
+**Problem**: Tema konfigürasyonu ThemeController, ThemeHelper ve LoadUserTheme middleware'inde tekrarlanıyordu.
+
+**Çözüm**: Merkezi ThemeConfig servisi oluşturuldu:
+```php
+// Merkezi tema tanımları
+private const THEMES = [
+    'default' => ['name' => 'Default', 'colors' => '#9d7bff, #6ab7ff', ...],
+    'cutie' => ['name' => 'Cutie', 'colors' => '#8b7cff, #7fd3ff', ...],
+    // ... diğer temalar
+];
+
+// Merkezi metodlar
+public static function getThemes(): array;
+public static function isValidTheme(string $theme): bool;
+public static function normalizeTheme($themeId): string;
+public static function getThemeName(string $themeId): ?string;
+public static function getThemeColors(string $themeId): array;
+public static function getCssPath(string $themeId): string;
+```
+
+**Avantajlar**:
+- DRY (Don't Repeat Yourself) prensibi uygulandı
+- Tema doğrulama tek noktadan yapılıyor
+- Tema meta verileri merkezi olarak yönetiliyor
+- Kod tekrarı önlendi
+
+### 2. Tema Önbelleğe Alma (Caching)
+
+**ThemeController** sınıfında:
+```php
+private const CACHE_TTL = 3600; // 1 saat
+
+// Tema değiştirildiğinde cache'e kaydet
+Cache::put(self::getUserThemeCacheKey($user->id), $theme, self::CACHE_TTL);
+
+// Tema yüklenirken önce cache kontrol et
+$cachedTheme = Cache::get(self::getUserThemeCacheKey($userId));
+```
+
+**Avantajlar**:
+- Her istekte veritabanı sorgusu yapılmaz
+- Tema tercihleri 1 saat boyunca cache'den okunur
+- Veritabanı yükü azalır
+
+### 3. Veritabanı İndeksleri
+
+**Yeni Migration**: `2026_02_08_000000_add_performance_indexes.php`
+
+Eklenen indeksler:
+```php
+// posts tablosu için
+$table->index('user_id', 'idx_posts_user_id');           // Kullanıcı sorguları
+$table->index('created_at', 'idx_posts_created_at');      // Sıralama sorguları
+$table->index('deleted_at', 'idx_posts_deleted_at');      // Soft delete sorguları
+$table->index(['user_id', 'created_at'], 'idx_posts_user_created'); // Birleşik indeks
+$table->index('title', 'idx_posts_title');               // Arama sorguları
+
+// users tablosu için
+$table->index('theme_preference', 'idx_users_theme_preference'); // Tema sorguları
+```
+
+**Avantajlar**:
+- Sorgu hızı artar
+- Büyük veri kümelerinde performans iyileşir
+- İndekslenmiş alanlarda WHERE koşulları hızlanır
+
+### 4. PostController Query Optimizasyonları
+
+#### Eager Loading ile Select Sütunları
+```php
+// Önceki (tam tablo taranıyordu)
+$posts = Post::with('user')->latest()->paginate(10);
+
+// Sonraki (sadece gerekli sütunlar)
+$posts = Post::with('user:id,name')
+    ->select(['id', 'user_id', 'title', 'content', 'image', 'created_at'])
+    ->latest()
+    ->paginate(10);
+```
+
+#### Optimize Edilmiş Previous/Next Sorguları
+```php
+// Sadece gerekli sütunları seç
+$previous = Post::select(['id', 'title', 'created_at'])
+    ->where('id', '<', $post->id)
+    ->orderBy('id', 'desc')
+    ->first();
+
+$next = Post::select(['id', 'title', 'created_at'])
+    ->where('id', '>', $post->id)
+    ->orderBy('id', 'asc')
+    ->first();
+```
+
+**Avantajlar**:
+- Daha az veri transferi
+- Daha hızlı sorgu yanıtı
+- Bellek kullanımı azalır
+
+### 5. Middleware Optimizasyonu
+
+**LoadUserTheme** middleware'i iyileştirildi:
+```php
+private function resolveTheme(Request $request): string
+{
+    // 1. Kullanıcı girişi kontrolü
+    if (auth()->check()) {
+        if ($user->theme_preference) {
+            return $user->theme_preference;
+        }
+    }
+    
+    // 2. Session kontrolü
+    $sessionTheme = $request->session()->get('theme');
+    
+    // 3. Cookie kontrolü
+    $cookieTheme = $request->cookie('theme');
+    
+    // 4. Default tema
+    return self::DEFAULT_THEME;
+}
+```
+
+**Eklenen özellikler**:
+- Cookie tabanlı tema hatırlama
+- view()->share() ile tüm view'lere tema paylaşımı
+- Daha temiz ve okunabilir kod yapısı
+
+### 6. Cache Etiketleri
+
+**PostController**'a cache etiketleri eklendi:
+```php
+private function clearPostCache(): void
+{
+    Cache::tags(['posts'])->flush();
+}
+```
+
+**Avantajlar**:
+- İlgili cache'ler gruplanabilir
+- Selektif cache temizleme
+- Daha granüler kontrol
+
+### 7. AppServiceProvider İyileştirmeleri
+
+```php
+// Tema konfigürasyon servisi singleton olarak kaydedildi
+$this->app->singleton(\App\Services\ThemeConfig::class, function ($app) {
+    return new \App\Services\ThemeConfig();
+});
+
+// Production ortamında ön yükleme
+if (app()->environment('production')) {
+    Cache::remember('themes:all', 86400, function () {
+        return \App\Services\ThemeConfig::getThemes();
+    });
+}
+```
 
 ---
 

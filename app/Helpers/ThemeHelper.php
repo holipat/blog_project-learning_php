@@ -2,6 +2,8 @@
 
 namespace App\Helpers;
 
+use App\Services\ThemeConfig;
+
 class ThemeHelper
 {
     /**
@@ -9,22 +11,15 @@ class ThemeHelper
      */
     public static function getCurrentTheme(): string
     {
-        return session('theme', 'default');
+        return session('theme', ThemeConfig::getDefaultTheme());
     }
     
     /**
-     * Get available themes
+     * Get available themes (using centralized config)
      */
     public static function getAvailableThemes(): array
     {
-        return [
-            ['id' => 'default', 'name' => 'Default', 'colors' => '#9d7bff, #6ab7ff'],
-            ['id' => 'ocean', 'name' => 'Ocean', 'colors' => '#2ba8d4, #00bfb3'],
-            ['id' => 'sunset', 'name' => 'Sunset', 'colors' => '#ff9f5a, #ff7185'],
-            ['id' => 'forest', 'name' => 'Forest', 'colors' => '#4a9b6f, #6ac491'],
-            ['id' => 'midnight', 'name' => 'Midnight', 'colors' => '#4a5aed, #6c7cff'],
-            ['id' => 'cotton-candy', 'name' => 'Cotton Candy', 'colors' => '#f5a3d9, #b5a7ff'],
-        ];
+        return ThemeConfig::getThemes();
     }
     
     /**
@@ -36,16 +31,42 @@ class ThemeHelper
     }
     
     /**
-     * Get theme name by ID
+     * Get theme name by ID (using centralized config)
      */
     public static function getThemeName(string $themeId): ?string
     {
-        $themes = self::getAvailableThemes();
-        foreach ($themes as $theme) {
-            if ($theme['id'] === $themeId) {
-                return $theme['name'];
-            }
-        }
-        return null;
+        return ThemeConfig::getThemeName($themeId);
+    }
+    
+    /**
+     * Get theme colors by ID
+     */
+    public static function getThemeColors(string $themeId): string
+    {
+        return ThemeConfig::getThemeColors($themeId);
+    }
+    
+    /**
+     * Get theme CSS path
+     */
+    public static function getThemeCssPath(string $themeId): string
+    {
+        return ThemeConfig::getCssPath($themeId);
+    }
+    
+    /**
+     * Validate if a theme is valid
+     */
+    public static function isValidTheme(string $themeId): bool
+    {
+        return ThemeConfig::isValidTheme($themeId);
+    }
+    
+    /**
+     * Normalize theme value
+     */
+    public static function normalizeTheme($themeId): string
+    {
+        return ThemeConfig::normalizeTheme($themeId);
     }
 }
