@@ -1,6 +1,6 @@
-# 📝 Blog Projesi - Laravel 12
+# 📝 Blog Projesi
 
-Csentez, zarif ve modern bir blog uygulaması. **Laravel 12** ile yapılmıştır.
+Zarif ve modern bir blog uygulaması. **Laravel 12** ile yapılmıştır.
 
 ## 🎨 Özellikler
 
@@ -22,7 +22,7 @@ Csentez, zarif ve modern bir blog uygulaması. **Laravel 12** ile yapılmıştı
 - CSRF koruması
 
 ⚡ **Performans**
-- N+1 sorgu optimizasyonu (Eager Loading)
+- N+1 sorgu optimizasyonu
 - Soft delete ile veri kurtarma
 - Pagination ile sayfa yönetimi
 
@@ -33,7 +33,6 @@ Csentez, zarif ve modern bir blog uygulaması. **Laravel 12** ile yapılmıştı
 - PHP 8.2+
 - Composer
 - MySQL/MariaDB
-- Node.js (isteğe bağlı)
 
 ### Kurulum
 
@@ -225,27 +224,13 @@ chmod -R 775 storage/
 chmod -R 775 bootstrap/cache/
 ```
 
-## 📝 Lisans
-
-Bu proje MIT lisansı altındadır. Detaylar için LICENSE dosyasını göz atın.
-
-## 🙋 Destek
-
-Sorularınız veya sorunlarınız varsa, lütfen issue açın.
-
 ---
 
-**Son Güncelleme**: 7 Şubat 2026  
+**Son Güncelleme**: 28 Şubat 2026  
 **Framework**: Laravel 12  
 **PHP Sürümü**: 8.2+  
 **Database**: MySQL 8.0+  
 
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
 
 ## License
 
