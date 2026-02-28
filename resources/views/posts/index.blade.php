@@ -49,7 +49,7 @@
                         <div class="col-md-9">
                             <div class="d-flex justify-content-between align-items-start mb-3 flex-wrap gap-2">
                                 <div style="flex: 1; min-width: 250px;">
-                                    <h5 class="mb-2 fw-bold" style="color: var(--primary-dark);">
+                                    <h5 class="mb-2 fw-bold" style="color: var(--rose-blush);">
                                         {{ $post->title }}
                                     </h5>
                                     
@@ -98,7 +98,7 @@
                 @else
                     <div class="d-flex justify-content-between align-items-start mb-3 flex-wrap gap-2">
                         <div style="flex: 1; min-width: 250px;">
-                            <h5 class="mb-2 fw-bold" style="color: var(--primary-dark);">
+                            <h5 class="mb-2 fw-bold" style="color: var(--pastel-purple);">
                                 {{ $post->title }}
                             </h5>
                             

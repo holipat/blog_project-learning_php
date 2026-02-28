@@ -10,5 +10,5 @@ echo 4. Cache clear...
 C:\xampp\php\php.exe artisan config:cache
 echo 5. Server baslatiliyor...
 echo Tarayicida: http://localhost:8000
-C:\xampp\php\php.exe artisan serve
+C:\xampp\php\php.exe artisan serve --port=8081
 pause
